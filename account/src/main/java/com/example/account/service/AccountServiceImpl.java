@@ -54,7 +54,7 @@ public class AccountServiceImpl implements AccountService{
                 .id(savedAccount.getId())
                 .build();
 
-        String url = "http://localhost:8081/api/v1/notification/verify";
+        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/verify";
         //should
         restTemplate.postForObject(url, account1,Boolean.class);
 

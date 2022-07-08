@@ -48,7 +48,7 @@ public class NotificationService {
 
     public String confirmToken(String token, Long account_id) {
        String confirmationResult = confirmationTokenService.confirmToken(token);
-       String url = "http://localhost:8080/api/v1/account/enable";
+       String url = "http://ACCOUNT-SERVICE/api/v1/account/enable";
        restTemplate.postForObject(url, account_id, Long.class);
        return confirmationResult;
     }

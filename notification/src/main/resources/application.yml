@@ -7,6 +7,8 @@ server:
     include-binding-errors: always
 
 spring:
+  application:
+    name: NOTIFICATION-SERVICE
   datasource:
     password: password
     url: jdbc:postgresql://localhost:5432/notification_db
@@ -31,7 +33,14 @@ spring:
           starttls:
             enable: true
 
-
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      default-zone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
 
 logging:
   level:

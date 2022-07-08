@@ -54,8 +54,14 @@ public class AccountServiceImpl implements AccountService{
                 .id(savedAccount.getId())
                 .build();
 
-        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/verify";
+        String url = "http://localhost:8081/api/v1/notification/verify";
+        //should
         restTemplate.postForObject(url, account1,Boolean.class);
+
+//        if(isEmailVerified){
+//            savedAccount.setEnabled(true);
+//            accountRepository.save(savedAccount);
+//        }
 
         return new ResponseEntity<>("Account created", HttpStatus.CREATED);
     }
@@ -78,7 +84,6 @@ public class AccountServiceImpl implements AccountService{
         account.setEnabled(true);
         accountRepository.save(account);
     }
-
 
     @Override
     public ResponseEntity<String> updateAccount(Map<String, Object> accountRequest, Long id) {

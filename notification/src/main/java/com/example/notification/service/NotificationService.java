@@ -24,7 +24,7 @@ public class NotificationService {
         //call confirmationTokenService to generate token
         String token = confirmationTokenService.generateConfirmationToken(account.getId());
 
-        String link = "localhost:8081/api/v1/notification/confirm/account.getId()?token="+ token;
+        String link = "localhost:8081/api/v1/notification/confirm?token="+ token;
         //call emailSender to send email
         emailSender.send(account.getEmail(), buildEmail(account.getFirstName(), link), "Confirm your email");
         //return a response to the microservice that called, find a way to make it wait until there is a confirmation--15 mins
@@ -48,7 +48,7 @@ public class NotificationService {
 
     public String confirmToken(String token, Long account_id) {
        String confirmationResult = confirmationTokenService.confirmToken(token);
-       String url = "http://ACCOUNT-SERVICE/api/v1/account/enable";
+       String url = "http://localhost:8080/api/v1/account/enable";
        restTemplate.postForObject(url, account_id, Long.class);
        return confirmationResult;
     }

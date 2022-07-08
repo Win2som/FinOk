@@ -47,9 +47,9 @@ public class TransactionServiceImpl implements TransactionService{
     public ResponseEntity<String> makeLocalTransfer(TransferRequest transferRequest, Long account_id) {
 
         //call the account microservice, get the account info of the logged in user
-        String url1 = "http://ACCOUNT-SERVICE/api/v1/account/get/"+account_id;
+        String url1 = "http://localhost:8080/api/v1/account/get/"+account_id;
         String requestParam = transferRequest.getRecipientAcctNo();
-        String url2 =  "http://ACCOUNT-SERVICE/api/v1/account/get?accountNum="+requestParam;
+        String url2 =  "http://localhost:8080/api/v1/account/get?accountNum="+requestParam;
 
         Account account1 = restTemplate.getForObject(url1, Account.class);
         log.info("first call to account service {}", account1);
@@ -79,8 +79,8 @@ public class TransactionServiceImpl implements TransactionService{
         log.info("account2 balance {}", account2.getWallet().getBalance());
 
         //call account endpoint to update the two accounts ***
-        String putUrl1 = "http://ACCOUNT-SERVICE/api/v1/account/update/"+account_id;
-        String putUrl2 = "http://ACCOUNT-SERVICE/api/v1/account/update/"+account2.getId();
+        String putUrl1 = "http://localhost:8080/api/v1/account/update/"+account_id;
+        String putUrl2 = "http://localhost:8080/api/v1/account/update/"+account2.getId();
 
         restTemplate.put(putUrl1, account1,account_id);
         restTemplate.put(putUrl2, account2, account2.getId());
@@ -101,7 +101,7 @@ public class TransactionServiceImpl implements TransactionService{
         mailRequest2.setEmail(account2.getEmail());
         mailRequest2.setCurrentBalance(account2.getWallet().getBalance() + transferRequest.getAmount());
 
-        String url = "NOTIFICATION-SERVICE/api/v1/notification/notify";
+        String url = "http://localhost:8081/api/v1/notification/notify";
         try {
             restTemplate.postForObject(url, mailRequest1, String.class);
             restTemplate.postForObject(url, mailRequest2, String.class);

@@ -1,0 +1,26 @@
+server:
+  port: 8082
+  servlet:
+    context-path : /api
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  datasource:
+    password: password
+    url: jdbc:postgresql://localhost:5432/transaction_db
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+

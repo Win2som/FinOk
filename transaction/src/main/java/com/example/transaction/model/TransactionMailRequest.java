@@ -17,6 +17,7 @@ public class TransactionMailRequest {
     private String debitAccount;
     private String creditAccount;
     private Double amount;
+    private Double currentBalance;
     private String narration;
     private String status;
     private LocalDateTime createdAt;

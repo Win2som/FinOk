@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@ToString
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -13,13 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +38,7 @@ public class TransactionServiceImpl implements TransactionService{
 
         List<Transaction> transactionList = transactionPage.getContent();
 
-        return new ResponseEntity<>(transactionList.stream().map(utility::from)
+        return new ResponseEntity<>(transactionList.stream().map(utility::fromTransaction)
                 .collect(Collectors.toList()), HttpStatus.OK);
     }
 
@@ -49,9 +46,7 @@ public class TransactionServiceImpl implements TransactionService{
     @Override
     public ResponseEntity<String> makeLocalTransfer(TransferRequest transferRequest, Long account_id) {
 
-        /*call the account microservice, get the account info of the logged in user
-        *
-        * */
+        //call the account microservice, get the account info of the logged in user
         String url1 = "http://localhost:8080/api/v1/account/get/"+account_id;
         String requestParam = transferRequest.getRecipientAcctNo();
         String url2 =  "http://localhost:8080/api/v1/account/get?accountNum="+requestParam;
@@ -83,7 +78,7 @@ public class TransactionServiceImpl implements TransactionService{
         log.info("account1 balance {}", account1.getWallet().getBalance());
         log.info("account2 balance {}", account2.getWallet().getBalance());
 
-        //response = call account endpoint to update the two accounts
+        //call account endpoint to update the two accounts ***
         String putUrl1 = "http://localhost:8080/api/v1/account/update/"+account_id;
         String putUrl2 = "http://localhost:8080/api/v1/account/update/"+account2.getId();
 
@@ -91,31 +86,28 @@ public class TransactionServiceImpl implements TransactionService{
         restTemplate.put(putUrl2, account2, account2.getId());
 
 
-        Transaction transaction = Transaction.builder()
-                .amount(transferRequest.getAmount())
-                .debitAccountNumber(account1.getWallet().getAccountNumber())
-                .creditAccountNumber(transferRequest.getRecipientAcctNo())
-                .narration(transferRequest.getNarration())
-                .status("successful")
-                .createdAt(LocalDateTime.now())
-                .build();
-
+        Transaction transaction = utility.fromTransferRequest(transferRequest, account1);
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         //call notification service to send mails to the two account holders
 
-        TransactionMailRequest mailRequest = TransactionMailRequest.builder()
-                .firstName(account1.getFirstName())
-                .email(account1.getEmail())
-                .debitAccount(savedTransaction.getDebitAccountNumber())
-                .creditAccount(savedTransaction.getCreditAccountNumber())
-                .amount(savedTransaction.getAmount())
-                .narration(savedTransaction.getNarration())
-                .status(savedTransaction.getStatus())
-                .build();
+        TransactionMailRequest mailRequest1 = utility.fromTransactionToMailRequest(savedTransaction,account1);
+        mailRequest1.setFirstName(account1.getFirstName());
+        mailRequest1.setEmail(account1.getEmail());
+        mailRequest1.setCurrentBalance(account1.getWallet().getBalance() - transferRequest.getAmount());
+
+        TransactionMailRequest mailRequest2 = utility.fromTransactionToMailRequest(savedTransaction,account1);
+        mailRequest2.setFirstName(account2.getFirstName());
+        mailRequest2.setEmail(account2.getEmail());
+        mailRequest2.setCurrentBalance(account2.getWallet().getBalance() + transferRequest.getAmount());
 
         String url = "http://localhost:8081/api/v1/notification/notify";
-        restTemplate.postForObject(url, mailRequest, String.class);
+        try {
+            restTemplate.postForObject(url, mailRequest1, String.class);
+            restTemplate.postForObject(url, mailRequest2, String.class);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
         return new ResponseEntity<>("transfer successful", HttpStatus.OK);
 

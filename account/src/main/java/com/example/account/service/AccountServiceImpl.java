@@ -140,7 +140,8 @@ public class AccountServiceImpl implements AccountService{
                 orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
         BeanUtils.copyProperties(account, acct);
         log.info(String.valueOf(account.getWallet().getBalance()));
-        acct.getWallet().setBalance(account.getWallet().getBalance());
+
+        walletRepository.save(account.getWallet());
         accountRepository.save(acct);
 
         return new ResponseEntity<>("account updated by transaction",HttpStatus.OK);

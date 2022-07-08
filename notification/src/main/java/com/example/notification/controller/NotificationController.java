@@ -22,9 +22,9 @@ public class NotificationController {
     }
 
 
-    @GetMapping(path = "/confirm")
-    public String confirm(@RequestParam("token") String token) {
-        return notificationService.confirmToken(token);
+    @GetMapping(path = "/confirm/{id}")
+    public String confirm(@RequestParam("token")String token, @PathVariable("id") Long account_id) {
+        return notificationService.confirmToken(token, account_id);
     }
 
 

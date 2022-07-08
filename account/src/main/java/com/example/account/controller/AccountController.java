@@ -26,7 +26,10 @@ public class AccountController {
         return accountService.creatAccount(accountRequest);
     }
 
-
+    @PostMapping("/enable")
+    public void enableAccount(@RequestBody Long account_id){
+        accountService.enableAccount(account_id);
+    }
 //for transaction service
     @PutMapping("/update/{id}")
     public ResponseEntity<String> accountUpdate(@RequestBody Account account, @PathVariable("id")Long id){

@@ -23,4 +23,6 @@ public interface AccountService {
     ResponseEntity<Account> getAccountWithAccountNum(String accountNum);
 
     ResponseEntity<String> accountUpdate(Account account, Long id);
+
+    void enableAccount(Long account_id);
 }

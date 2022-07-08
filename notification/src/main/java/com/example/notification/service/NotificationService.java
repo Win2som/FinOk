@@ -6,6 +6,7 @@ import com.example.notification.model.Transaction;
 import com.example.notification.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ public class NotificationService {
 
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
+    private RestTemplate restTemplate;
 
     public boolean verifyEmail(Account account) {
 
@@ -44,8 +46,11 @@ public class NotificationService {
     }
 
 
-    public String confirmToken(String token) {
-       return confirmationTokenService.confirmToken(token);
+    public String confirmToken(String token, Long account_id) {
+       String confirmationResult = confirmationTokenService.confirmToken(token);
+       String url = "http://localhost:8080/api/v1/account/enable";
+       restTemplate.postForObject(url, account_id, Long.class);
+       return confirmationResult;
     }
 
 

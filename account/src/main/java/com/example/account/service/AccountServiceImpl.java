@@ -55,13 +55,7 @@ public class AccountServiceImpl implements AccountService{
                 .build();
 
         String url = "http://NOTIFICATION-SERVICE/api/v1/notification/verify";
-        //should
-        restTemplate.postForObject(url, account1,Boolean.class);
-
-//        if(isEmailVerified){
-//            savedAccount.setEnabled(true);
-//            accountRepository.save(savedAccount);
-//        }
+        restTemplate.postForObject(url, account1, void.class);
 
         return new ResponseEntity<>("Account created", HttpStatus.CREATED);
     }

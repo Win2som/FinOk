@@ -19,7 +19,7 @@ public class NotificationService {
     private final EmailSender emailSender;
     private RestTemplate restTemplate;
 
-    public boolean verifyEmail(Account account) {
+    public void verifyEmail(Account account) {
 
         //call confirmationTokenService to generate token
         String token = confirmationTokenService.generateConfirmationToken(account.getId());
@@ -27,8 +27,6 @@ public class NotificationService {
         String link = "localhost:8081/api/v1/notification/confirm?token="+ token;
         //call emailSender to send email
         emailSender.send(account.getEmail(), buildEmail(account.getFirstName(), link), "Confirm your email");
-        //return a response to the microservice that called, find a way to make it wait until there is a confirmation--15 mins
-        return confirmationTokenService.checkConfirmationTokenStatus(token);
 
     }
 

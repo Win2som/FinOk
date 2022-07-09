@@ -25,16 +25,6 @@ public class NotificationApplication {
         SpringApplication.run(NotificationApplication.class, args);
     }
 
-//    @EventListener(ApplicationReadyEvent.class)
-//    public void sendMail(){
-//        emailSender.send("obidikechisom40@gmail.com", "This is the mail you are waiting for");
-//    }
-
-//    @EventListener(ApplicationReadyEvent.class)
-    @PostMapping("/entry")
-    public void sendMail(@RequestBody Transaction transaction){
-        emailSender.send(transaction.getEmail(), transaction.getNarration(), "testing");
-    }
 
     @Bean
     @LoadBalanced

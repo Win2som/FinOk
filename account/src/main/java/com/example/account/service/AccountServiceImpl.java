@@ -5,6 +5,7 @@ import com.example.account.model.AccountRequest;
 import com.example.account.model.AccountResponse;
 import com.example.account.repository.AccountRepository;
 import com.example.account.repository.WalletRepository;
+import com.example.amqp.RabbitMQMessageProducer;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -27,7 +28,8 @@ public class AccountServiceImpl implements AccountService{
 
     private final AccountRepository accountRepository;
     private final WalletRepository walletRepository;
-    private RestTemplate restTemplate;
+//    private RestTemplate restTemplate;
+    private RabbitMQMessageProducer rabbitMQMessageProducer;
 
     @Override
     public ResponseEntity<String> creatAccount(AccountRequest accountRequest) {
@@ -54,8 +56,11 @@ public class AccountServiceImpl implements AccountService{
                 .id(savedAccount.getId())
                 .build();
 
-        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/verify";
-        restTemplate.postForObject(url, account1, void.class);
+//        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/verify";
+//        restTemplate.postForObject(url, account1, void.class);
+
+        rabbitMQMessageProducer.publish(account1, "internal.notification.routing-key",
+                "internal.exchange");
 
         return new ResponseEntity<>("Account created", HttpStatus.CREATED);
     }

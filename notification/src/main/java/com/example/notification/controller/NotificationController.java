@@ -1,7 +1,7 @@
 package com.example.notification.controller;
 
-import com.example.notification.model.Account;
-import com.example.notification.model.Transaction;
+import com.example.notification.model.AccountRequest;
+import com.example.notification.model.TransactionRequest;
 import com.example.notification.service.NotificationService;
 import lombok.AllArgsConstructor;
 
@@ -17,7 +17,7 @@ public class NotificationController {
 
 
     @PostMapping("/verify")
-    public void verifyEmail(@RequestBody Account account){
+    public void verifyEmail(@RequestBody AccountRequest account){
         notificationService.verifyEmail(account);
     }
 
@@ -29,7 +29,7 @@ public class NotificationController {
 
 
     @PostMapping("/notify")
-    public String sendTransactionEmail(@RequestBody Transaction transaction){
+    public String sendTransactionEmail(@RequestBody TransactionRequest transaction){
         return notificationService.sendTransactionEmail(transaction);
     }
 }

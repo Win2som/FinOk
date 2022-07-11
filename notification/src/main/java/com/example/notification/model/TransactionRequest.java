@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transaction {
+public class TransactionRequest {
     private String firstName;
     private String email;
     private String debitAccount;

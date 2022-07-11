@@ -29,9 +29,13 @@ public class ConfirmationTokenService {
     }
 
 
-    public String confirmToken(String token){
+    public String confirmToken(String token, Long account_id){
         ConfirmationToken confirmationToken = confirmationTokenRepository.findByToken(token)
                 .orElseThrow(() -> new IllegalStateException("token not found"));
+
+        if(!confirmationToken.getAccount_id().equals(account_id)){
+            throw new IllegalStateException("token and account mismatch");
+        }
 
         if(confirmationToken.getConfirmedAt() != null){
             throw new IllegalStateException("email already confirmed");

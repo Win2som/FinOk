@@ -28,6 +28,7 @@ public class Account {
     private String lastName;
     @NotEmpty
     @Email
+    @Column(unique = true)
     private String email;
     @NotEmpty
     @Size(min = 6, message = "Password should have at least 6 characters")

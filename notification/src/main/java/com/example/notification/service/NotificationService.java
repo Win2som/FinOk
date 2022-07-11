@@ -1,10 +1,11 @@
 package com.example.notification.service;
 
 import com.example.notification.email.EmailSender;
-import com.example.notification.model.Account;
-import com.example.notification.model.Transaction;
+import com.example.notification.model.AccountRequest;
+import com.example.notification.model.TransactionRequest;
 import com.example.notification.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,13 +14,15 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class NotificationService {
 
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailSender emailSender;
     private RestTemplate restTemplate;
 
-    public void verifyEmail(Account account) {
+
+    public void verifyEmail(AccountRequest account) {
 
         //call confirmationTokenService to generate token
         String token = confirmationTokenService.generateConfirmationToken(account.getId());
@@ -45,14 +48,16 @@ public class NotificationService {
 
 
     public String confirmToken(String token, Long account_id) {
-       String confirmationResult = confirmationTokenService.confirmToken(token);
+       String confirmationResult = confirmationTokenService.confirmToken(token, account_id);
+
        String url = "http://ACCOUNT-SERVICE/api/v1/account/enable";
        restTemplate.postForObject(url, account_id, Long.class);
+
        return confirmationResult;
     }
 
 
-    public String sendTransactionEmail(Transaction transaction) {
+    public String sendTransactionEmail(TransactionRequest transaction) {
         String email = buildEmailTwo(transaction.getFirstName(), transaction.getDebitAccount(), transaction.getCreditAccount(),
         transaction.getAmount(), transaction.getStatus(), transaction.getNarration(), transaction.getCreatedAt());
         emailSender.send(transaction.getEmail(), email, "Debit transaction");

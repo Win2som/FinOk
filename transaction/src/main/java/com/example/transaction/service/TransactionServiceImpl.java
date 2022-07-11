@@ -1,5 +1,6 @@
 package com.example.transaction.service;
 
+import com.example.amqp.RabbitMQMessageProducer;
 import com.example.transaction.entity.Transaction;
 import com.example.transaction.model.Account;
 import com.example.transaction.model.TransactionMailRequest;
@@ -29,6 +30,8 @@ public class TransactionServiceImpl implements TransactionService{
     private TransactionRepository transactionRepository;
     private final Utility utility;
     private RestTemplate restTemplate;
+    private RabbitMQMessageProducer rabbitMQMessageProducer;
+
 
     @Override
     public ResponseEntity<List<TransactionResponse>> getTransaction(Integer pageNo, Integer pageSize) {
@@ -101,13 +104,16 @@ public class TransactionServiceImpl implements TransactionService{
         mailRequest2.setEmail(account2.getEmail());
         mailRequest2.setCurrentBalance(account2.getWallet().getBalance() + transferRequest.getAmount());
 
-        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/notify";
-        try {
-            restTemplate.postForObject(url, mailRequest1, String.class);
-            restTemplate.postForObject(url, mailRequest2, String.class);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+//        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/notify";
+//        try {
+//            restTemplate.postForObject(url, mailRequest1, String.class);
+//            restTemplate.postForObject(url, mailRequest2, String.class);
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+
+        rabbitMQMessageProducer.publish(mailRequest1, "internal.notification.routing-key", "internal.exchange");
+        rabbitMQMessageProducer.publish(mailRequest2, "internal.notification.routing-key", "internal.exchange");
 
         return new ResponseEntity<>("transfer successful", HttpStatus.OK);
 

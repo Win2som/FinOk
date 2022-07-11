@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="notification" />
         <module name="cloud-config-server" />
+        <module name="amqp" />
         <module name="account" />
         <module name="transaction" />
         <module name="service-registry" />
@@ -16,6 +17,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="account" target="17" />
+      <module name="amqp" target="17" />
       <module name="cloud-config-server" target="17" />
       <module name="cloud-gateway" target="17" />
       <module name="notification" target="17" />
@@ -26,6 +28,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="account" options="-parameters" />
+      <module name="amqp" options="-parameters" />
       <module name="cloud-config-server" options="-parameters" />
       <module name="cloud-gateway" options="-parameters" />
       <module name="notification" options="-parameters" />

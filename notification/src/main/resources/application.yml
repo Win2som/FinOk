@@ -32,6 +32,17 @@ spring:
           auth: true
           starttls:
             enable: true
+  rabbitmq:
+    addresses: localhost:5672
+
+rabbitmq:
+  exchanges:
+      internal: internal.exchange
+  queues:
+      notification: notification.queue
+  routing-keys:
+      internal-notification: internal.notification.routing-key
+
 
 logging:
   level:

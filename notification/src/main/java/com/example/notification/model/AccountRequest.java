@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Account {
+public class AccountRequest {
     private Long id;
     private String firstName;
     private String email;

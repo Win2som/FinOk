@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -27,7 +28,7 @@ public class TransactionController {
 
     //this url/service will call the viewAccount of account service to get the account number
     @PostMapping("/{account_id}")
-    public ResponseEntity<String> localTransfer(@RequestBody TransferRequest transferRequest, @PathVariable("account_id") Long account_id){
+    public ResponseEntity<String> localTransfer(@Valid @RequestBody TransferRequest transferRequest, @PathVariable("account_id") Long account_id){
         return transactionService.makeLocalTransfer(transferRequest, account_id);
     }
 

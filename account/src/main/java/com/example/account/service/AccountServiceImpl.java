@@ -32,8 +32,12 @@ public class AccountServiceImpl implements AccountService{
     private RabbitMQMessageProducer rabbitMQMessageProducer;
 
     @Override
-    public ResponseEntity<String> creatAccount(AccountRequest accountRequest) {
+    public ResponseEntity<String> createAccount(AccountRequest accountRequest) {
 
+        if(accountRepository.existsByEmail(accountRequest.getEmail())){
+            throw new RuntimeException("Account already exist");
+        }
+        
         Account account = Account.builder()
                 .firstName(accountRequest.getFirstName())
                 .lastName(accountRequest.getLastName())

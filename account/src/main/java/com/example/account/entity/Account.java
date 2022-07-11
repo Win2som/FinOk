@@ -6,6 +6,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
@@ -22,20 +23,13 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotEmpty
     private String firstName;
-    @NotEmpty
     private String lastName;
-    @NotEmpty
-    @Email
-    @Column(unique = true)
+
+    @Column(unique = true, nullable = false)
     private String email;
-    @NotEmpty
-    @Size(min = 6, message = "Password should have at least 6 characters")
     private String password;
 //    private LocalDate dob;
-    @NotEmpty
-    @Size(min = 10, message = "Phone number should have at least 10 characters")
     private String phoneNumber;
     private String address;
     @OneToOne

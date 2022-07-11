@@ -8,8 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 @Slf4j
@@ -21,9 +23,9 @@ public class AccountController {
     private final AccountService accountService;
 
     @PostMapping("/new")
-    public ResponseEntity<String> createAccount(@RequestBody AccountRequest accountRequest){
+    public ResponseEntity<String> createAccount(@Valid @RequestBody AccountRequest accountRequest){
         log.info("new account created {}", accountRequest);
-        return accountService.creatAccount(accountRequest);
+        return accountService.createAccount(accountRequest);
     }
 
     @PostMapping("/enable")

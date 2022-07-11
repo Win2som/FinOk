@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface AccountService {
 
-    ResponseEntity<String> creatAccount(AccountRequest accountRequest);
+    ResponseEntity<String> createAccount(AccountRequest accountRequest);
 
     ResponseEntity<String> updateAccount(Map<String, Object> accountRequest, Long id);
 

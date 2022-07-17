@@ -5,14 +5,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Getter
 @Setter
 @AllArgsConstructor
-public class TransferRequest {
+public class LocalTransferRequest {
+
+    @NotBlank
+    @Size(min = 10, message = "Account number should have at least 10 characters")
+    private String senderAcctNo;
     @NotBlank
     @Size(min = 10, message = "Account number should have at least 10 characters")
     private String recipientAcctNo;

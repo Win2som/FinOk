@@ -32,6 +32,7 @@ public class AccountController {
     public void enableAccount(@RequestBody Long account_id){
         accountService.enableAccount(account_id);
     }
+
 //for transaction service
     @PutMapping("/update/{id}")
     public ResponseEntity<String> accountUpdate(@RequestBody Account account, @PathVariable("id")Long id){
@@ -52,10 +53,6 @@ public class AccountController {
         return accountService.viewAccountByAcctHolder(id);
     }
 
-    @GetMapping("/get/{id}")
-    public ResponseEntity<Account> getAccountWithId(@PathVariable("id")Long id){
-        return accountService.getAccountWithId(id);
-    }
 
     @GetMapping("/get")
     public ResponseEntity<Account> getAccountWithAccountNum(@RequestParam(name = "accountNum")String accountNum){

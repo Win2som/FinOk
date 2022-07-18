@@ -16,8 +16,6 @@ public interface AccountService {
 
     ResponseEntity<AccountResponse> viewAccountByAcctHolder(Long id);
 
-    ResponseEntity<Account> getAccountWithId(Long id);
-
     ResponseEntity<String> deleteAccount(Long id);
 
     ResponseEntity<Account> getAccountWithAccountNum(String accountNum);

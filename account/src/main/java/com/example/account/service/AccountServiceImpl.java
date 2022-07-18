@@ -1,4 +1,5 @@
 package com.example.account.service;
+
 import com.example.account.entity.Account;
 import com.example.account.entity.Wallet;
 import com.example.account.model.AccountRequest;
@@ -13,13 +14,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -43,7 +42,6 @@ public class AccountServiceImpl implements AccountService{
                 .lastName(accountRequest.getLastName())
                 .email(accountRequest.getEmail())
                 .password(accountRequest.getPassword())
-//                .dob(accountRequest.getDob())
                 .phoneNumber(accountRequest.getPhoneNumber())
                 .address(accountRequest.getAddress())
                 .wallet(buildWallet(accountRequest))
@@ -72,12 +70,30 @@ public class AccountServiceImpl implements AccountService{
     public Wallet buildWallet(AccountRequest accountRequest) {
 
         Wallet wallet = Wallet.builder()
-                .accountNumber(accountRequest.getAccountNumber())
+                .accountNumber(accountNumber())
                 .bvn(accountRequest.getBvn())
                 .pin(accountRequest.getPin())
                 .build();
+
+        log.info("Account number generated {}",wallet.getAccountNumber());
         return walletRepository.save(wallet);
     }
+
+
+    //account number generator
+    public String accountNumber() {
+        String uuid = UUID.randomUUID().toString().replace("-", "");
+
+        String numbers = "1234567890";
+        for (int i = 0; i < uuid.length(); i++) {
+            if (!numbers.contains(uuid.charAt(i) + "")) {
+                uuid = uuid.replace(uuid.charAt(i) + "", "");
+            }
+            log.info(uuid.substring(0, 10));
+        }
+        return uuid.substring(0, 10);
+    }
+
 
 
     @Override
@@ -87,6 +103,7 @@ public class AccountServiceImpl implements AccountService{
         account.setEnabled(true);
         accountRepository.save(account);
     }
+
 
     @Override
     public ResponseEntity<String> updateAccount(Map<String, Object> accountRequest, Long id) {
@@ -110,12 +127,10 @@ public class AccountServiceImpl implements AccountService{
     public ResponseEntity<AccountResponse> viewAccountByAcctHolder(Long id) {
         Account account = accountRepository.findById(id).
                 orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
-
         AccountResponse accountResponse = AccountResponse.builder()
                 .firstName(account.getFirstName())
                 .lastName(account.getLastName())
                 .email(account.getEmail())
-//                .dob(account.getDob())
                 .phoneNumber(account.getPhoneNumber())
                 .address(account.getAddress())
                 .accountNumber(account.getWallet().getAccountNumber())
@@ -126,13 +141,6 @@ public class AccountServiceImpl implements AccountService{
     }
 
 
-    @Override
-    public ResponseEntity<Account> getAccountWithId(Long id) {
-        Account account = accountRepository.findById(id).
-                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
-
-        return new ResponseEntity<>(account, HttpStatus.OK);
-    }
 
     @Override
     public ResponseEntity<Account> getAccountWithAccountNum(String accountNum) {
@@ -144,6 +152,7 @@ public class AccountServiceImpl implements AccountService{
 
         return new ResponseEntity<>(account,HttpStatus.OK);
     }
+
 
     @Override
     public ResponseEntity<String> accountUpdate(Account account, Long id) {
@@ -168,8 +177,5 @@ public class AccountServiceImpl implements AccountService{
 
         return new ResponseEntity<>("Account deleted", HttpStatus.OK);
     }
-
-
-
 
 }

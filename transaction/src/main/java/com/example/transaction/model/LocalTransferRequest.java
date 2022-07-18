@@ -1,4 +1,4 @@
-package com.example.transaction.model.transactionrequest;
+package com.example.transaction.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

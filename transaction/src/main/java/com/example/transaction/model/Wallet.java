@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 public class Wallet {
 
     private Long id;
-    //    private String bankName;
     private String accountNumber;
     private String bvn;
     private double balance = 0.00;

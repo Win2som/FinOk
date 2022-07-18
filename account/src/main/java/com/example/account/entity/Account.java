@@ -25,17 +25,14 @@ public class Account {
     private Long id;
     private String firstName;
     private String lastName;
-
     @Column(unique = true, nullable = false)
     private String email;
     private String password;
-//    private LocalDate dob;
     private String phoneNumber;
     private String address;
     @OneToOne
     private Wallet wallet;
     private boolean enabled = false;
-    private boolean locked = false;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

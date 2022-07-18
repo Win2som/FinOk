@@ -28,13 +28,13 @@ public class AccountRequest {
     @NotBlank
     @Size(min = 6, message = "Password should have at least 6 characters")
     private String password;
-//    private LocalDate dob;
+
     @NotBlank
     @Size(min = 10, message = "Phone number should have at least 10 numbers")
     private String phoneNumber;
 
     private String address;
-    private String accountNumber;
+
     @NotBlank
     @Size(min = 10, message = "BVN should have at least 10 numbers")
     private String bvn;

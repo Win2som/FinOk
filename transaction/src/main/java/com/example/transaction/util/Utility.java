@@ -4,7 +4,7 @@ import com.example.transaction.entity.Transaction;
 import com.example.transaction.model.Account;
 import com.example.transaction.model.TransactionMailRequest;
 import com.example.transaction.model.TransactionResponse;
-import com.example.transaction.model.transactionrequest.TransferRequest;
+import com.example.transaction.model.LocalTransferRequest;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -24,13 +24,13 @@ public class Utility {
                 .build();
     }
 
-    public Transaction fromTransferRequest(TransferRequest transferRequest, Account account){
+    public Transaction fromTransferRequest(LocalTransferRequest localTransferRequest, Account account){
 
         return Transaction.builder()
-                .amount(transferRequest.getAmount())
+                .amount(localTransferRequest.getAmount())
                 .debitAccountNumber(account.getWallet().getAccountNumber())
-                .creditAccountNumber(transferRequest.getRecipientAcctNo())
-                .narration(transferRequest.getNarration())
+                .creditAccountNumber(localTransferRequest.getRecipientAcctNo())
+                .narration(localTransferRequest.getNarration())
                 .status("successful")
                 .createdAt(LocalDateTime.now())
                 .build();

@@ -15,7 +15,6 @@ public class AccountResponse {
     private String firstName;
     private String lastName;
     private String email;
-    private LocalDate dob;
     private String phoneNumber;
     private String address;
     private String accountNumber;

@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface ConfirmationTokenRepository extends JpaRepository<ConfirmationToken, Long> {
 
+//    @Query(value = "select * from confirmation_token where token = :token;", nativeQuery = true)
     Optional<ConfirmationToken> findByToken(String token);
 
     @Transactional

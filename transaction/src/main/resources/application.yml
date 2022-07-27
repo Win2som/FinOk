@@ -26,5 +26,10 @@ logging:
   level:
     org.springframework.web: DEBUG
 
-  paystack_secret_key: ${PAYSTACK_SECRET_KEY}
+read-account-url: http://ACCOUNT-SERVICE/api/account/get?accountNum=
+update-account-url: http://ACCOUNT-SERVICE/api/account/
 
+
+jwt:
+  token:
+    secret: Hexdert687sdfghujikol;0w

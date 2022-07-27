@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -24,8 +25,9 @@ public class Wallet {
     private Long id;
     private String accountNumber;
     private String bvn;
-    private double balance = 0.00;
+    private BigDecimal balance;
     private String pin;
+    private int version;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class Account {
 
     private Long id;
@@ -22,12 +23,10 @@ public class Account {
     private String lastName;
     private String email;
     private String password;
-//    private LocalDate dob;
     private String phoneNumber;
     private String address;
     private Wallet wallet;
     private boolean enabled = false;
-    private boolean locked = false;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

@@ -1,10 +1,12 @@
 package com.example.transaction.model;
 
+import com.example.transaction.enums.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,8 +18,9 @@ public class TransactionMailRequest {
     private String email;
     private String debitAccount;
     private String creditAccount;
-    private Double amount;
-    private Double currentBalance;
+    private BigDecimal amount;
+    private String transactionType;
+    private BigDecimal currentBalance;
     private String narration;
     private String status;
     private LocalDateTime createdAt;

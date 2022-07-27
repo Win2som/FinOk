@@ -5,8 +5,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,9 +24,14 @@ public class Wallet {
     private String accountNumber;
     @Column(nullable = false, unique = true)
     private String bvn;
-    private double balance = 0.00;
+    @Column(nullable = false)
+    @PositiveOrZero
+    private BigDecimal balance;
     @Column(nullable = false)
     private String pin;
+    @Version
+    @Column(nullable = false)
+    private long version;
     @CreationTimestamp
     private LocalDateTime createdAt;
     @UpdateTimestamp

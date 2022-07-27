@@ -23,7 +23,9 @@ public class ConfirmationToken {
     @Column(nullable = false)
     private LocalDateTime expiresAt;
     private LocalDateTime confirmedAt;
+    @Column(nullable = false)
     private boolean confirmationStatus;
+    @Column(nullable = false)
     private Long account_id;
 
     //constructor without id

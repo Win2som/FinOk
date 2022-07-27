@@ -16,15 +16,15 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = "${rabbitmq.queues.notification}")
     public void consumer(AccountRequest accountRequest){
-        log.info("consumed {} from queue", accountRequest);
-        notificationService.verifyEmail(accountRequest);
+        log.info("consumed {} from queue", accountRequest.toString());
+        notificationService.sendVerificationEmail(accountRequest);
 
     }
 
 
     @RabbitListener(queues = "${rabbitmq.queues.notification}")
     public void consumer(TransactionRequest transactionRequest){
-        log.info("consumed {} from queue", transactionRequest);
+        log.info("consumed {} from queue", transactionRequest.toString());
         notificationService.sendTransactionEmail(transactionRequest);
 
     }

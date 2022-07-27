@@ -1,0 +1,54 @@
+server:
+  servlet:
+    context-path : /api
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: ACCOUNT-SERVICE
+  datasource:
+    password: password
+    url: jdbc:postgresql://localhost:5432/account_db
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+
+#management:
+#  health:
+#    circuitbreakers:
+#      enabled: true
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health
+#  endpoint:
+#    health:
+#      show-details: always
+#
+#resilience4j.circuitbreaker:
+#  instances:
+#    account:
+#      registerHealthIndicator: true
+#      eventConsumerBufferSize: 10
+#      failureRateThreshold: 50
+#      minimumNumberOfCalls: 5
+#      automaticTransitionFromOpenToHalfOpenEnabled: true
+#      waitDurationInOpenState: 5s
+#      permittedNumberOfCallsInHalfOpenState: 3
+#      slidingWindowSize: 50
+#      slidingWindowType: COUNT_BASED
+
+

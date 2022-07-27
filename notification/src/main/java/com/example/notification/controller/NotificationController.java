@@ -18,7 +18,7 @@ public class NotificationController {
 
     @PostMapping("/verify")
     public void verifyEmail(@RequestBody AccountRequest account){
-        notificationService.verifyEmail(account);
+        notificationService.sendVerificationEmail(account);
     }
 
 

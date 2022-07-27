@@ -7,25 +7,27 @@ import lombok.Setter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
 @AllArgsConstructor
 public class LocalTransferRequest {
 
-    @NotBlank
+    @NotBlank(message = "senderAcctNo must be provided")
     @Size(min = 10, message = "Account number should have at least 10 characters")
     private String senderAcctNo;
-    @NotBlank
+
+    @NotBlank(message = "recipientAcctNo must be provided")
     @Size(min = 10, message = "Account number should have at least 10 characters")
     private String recipientAcctNo;
 
     @NotNull(message = "amount is required")
-    private Double amount;
+    private BigDecimal amount;
 
     private String narration;
 
-    @NotBlank
+    @NotBlank(message = "pin must be provided")
     @Size(min = 4,max = 4, message = "Pin should have 4 numbers")
     private String pin;
 }

@@ -1,10 +1,12 @@
 package com.example.transaction.util;
 
 import com.example.transaction.entity.Transaction;
+import com.example.transaction.enums.TransactionType;
 import com.example.transaction.model.Account;
 import com.example.transaction.model.TransactionMailRequest;
 import com.example.transaction.model.TransactionResponse;
 import com.example.transaction.model.LocalTransferRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -42,6 +44,7 @@ public class Utility {
                 .debitAccount(transaction.getDebitAccountNumber())
                 .creditAccount(transaction.getCreditAccountNumber())
                 .amount(transaction.getAmount())
+                .transactionType(String.valueOf(transaction.getTransactionType()))
                 .narration(transaction.getNarration())
                 .status(transaction.getStatus())
                 .build();

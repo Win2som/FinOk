@@ -7,6 +7,7 @@ import com.example.notification.token.ConfirmationTokenService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
@@ -22,60 +23,73 @@ public class NotificationService {
     private RestTemplate restTemplate;
 
 
-    public void verifyEmail(AccountRequest account) {
+    public void sendVerificationEmail(AccountRequest account) {
 
         //call confirmationTokenService to generate token
         String token = confirmationTokenService.generateConfirmationToken(account.getId());
 
-        String link = "localhost:8081/api/v1/notification/confirm?token="+ token;
+        String link = "localhost:8081/api/v1/notification/confirm/"+account.getId()+"?token="+ token;
+        log.info("Sent link with token {}", link);
         //call emailSender to send email
-        emailSender.send(account.getEmail(), buildEmail(account.getFirstName(), link), "Confirm your email");
+        emailSender.send(account.getEmail(), buildVerificationEmail(account.getFirstName(), link), "Confirm your email");
 
     }
 
 
-    private String buildEmail(String name, String link) {
-        return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
-                "\n" +
-                "<span style=\"display:none;font-size:1px;color:#fff;max-height:0\"></span>\n" +
-                "\n" +
-                " <span style=\"font-family:Helvetica,Arial,sans-serif;font-weight:700;color:#ffffff;text-decoration:none;vertical-align:top;display:inline-block\">Confirm your email</span>\n" +
-                "\n" +
-                "<p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Hi " + name + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Thank you for registering. Please click on the below link to activate your account: </p><blockquote style=\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n Link will expire in 15 minutes. <p>See you soon</p>" +
+
+    private String buildVerificationEmail(String name, String link) {
+        return
+                "<p>Hi " + name + ",</p>" +
+                        "<p > Thank you for registering. Please click on the below link to activate your account: </p>" +
+                        "<blockquote style=\"color:blue; font-size:25px;\"><a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n Link will expire in 15 minutes. " +
+                        "<p>See you soon</p>" +
                 "\n" +
                 "</div></div>";
     }
 
 
+    @Transactional
     public String confirmToken(String token, Long account_id) {
        String confirmationResult = confirmationTokenService.confirmToken(token, account_id);
 
-       String url = "http://ACCOUNT-SERVICE/api/v1/account/enable";
-       restTemplate.postForObject(url, account_id, Long.class);
+       String url = "http://ACCOUNT-SERVICE/api/account/enable/" + account_id;
+       restTemplate.put(url, account_id, Long.class);
 
        return confirmationResult;
     }
 
 
     public String sendTransactionEmail(TransactionRequest transaction) {
-        String email = buildEmailTwo(transaction.getFirstName(), transaction.getDebitAccount(), transaction.getCreditAccount(),
-        transaction.getAmount(), transaction.getStatus(), transaction.getNarration(), transaction.getCreatedAt());
-        emailSender.send(transaction.getEmail(), email, "Debit transaction");
+        String email = buildTransactionEmail(transaction.getFirstName(), transaction.getDebitAccount(), transaction.getCreditAccount(),
+        transaction.getAmount(), transaction.getTransactionType(), transaction.getStatus(), transaction.getNarration(), transaction.getCreatedAt());
+        emailSender.send(transaction.getEmail(), email, getSubject(transaction.getTransactionType()));
 
         return "sent";
     }
 
 
-    private String buildEmailTwo(String name, String debitAccount, String creditAccount, Double amount, String narration, String status, LocalDateTime date) {
-        return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +
-                "\n" +
-                "<span style=\"display:none;font-size:1px;color:#fff;max-height:0\"></span>\n" +
-                "\n" +
-                "<p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Hi " + name + ",</p>" +
-                "<p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> The following debit transaction occurred in your account:</p>" +
-                " <p>Debit account: "+ debitAccount + "\n"+"Credit account: "+ creditAccount + "\n" + "Amount: "+ amount + "\n" +
-                "Status: "+ status + "\n" + "Narration: "+ narration + "\n" + "Date: "+ date +"</p> <p>Thank you for trusting us</p>" +
-                "\n" +
-                "</div></div>";
+    private String buildTransactionEmail(String name, String debitAccount, String creditAccount, Double amount, String transactionType, String narration, String status, LocalDateTime date) {
+        return
+                "<p>Hi " + name + ",</p>" +
+                "<p> The following transaction occurred in your account:</p>" +
+                "<p>Debit account: "+ debitAccount + "</p>" + "<p> Credit account: "+ creditAccount+"</p>" +
+                "<p> Amount: "+ amount + "</p>" + "<p> Transaction type: "+ transactionType + "</p>" +
+                "<p>Status: "+ status + "</p>" + "<p>Narration: "+ narration + "</p>" + "<p>Date: "+ date +
+                "</p> <p>Thank you for trusting us</p>";
+    }
+
+    private String getSubject(String subject){
+
+        log.info(subject);
+
+        if(subject.equals("FUNDING")){
+            return "Credit Transaction";
+        }
+        if(subject.equals("WITHDRAWAL")){
+            return "Debit Transaction";
+        }
+        else{
+            return "Local transfer";
+        }
     }
 }

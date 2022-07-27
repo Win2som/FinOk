@@ -14,6 +14,7 @@ public class TransactionRequest {
     private String email;
     private String debitAccount;
     private String creditAccount;
+    private String transactionType;
     private Double amount;
     private String narration;
     private String status;

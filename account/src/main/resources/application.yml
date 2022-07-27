@@ -19,8 +19,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show-sql: true
+    show-sql: false
 
+secret: Hexdert687sdfghujikol;0w
 
 logging:
   level:

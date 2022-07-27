@@ -19,8 +19,3 @@ spring:
           uri: lb://TRANSACTION-SERVICE
           predicates:
             - Path=/api/v1/transaction/**
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8084/realms/spring-boot-microservices-realm

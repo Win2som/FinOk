@@ -1,67 +1,55 @@
 package com.example.account.controller;
 
+import com.example.account.dto.UpdateRequest;
 import com.example.account.entity.Account;
-import com.example.account.model.AccountRequest;
-import com.example.account.model.AccountResponse;
+import com.example.account.dto.AccountResponse;
+import com.example.account.exception.CustomException;
+import com.example.account.exception.ResourceNotFoundException;
 import com.example.account.service.AccountService;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.Map;
 
-@Slf4j
 @RestController
-@RequestMapping("/v1/account")
-@AllArgsConstructor
+@RequestMapping("/account")
+@RequiredArgsConstructor
 public class AccountController {
 
     private final AccountService accountService;
 
-    @PostMapping("/new")
-    public ResponseEntity<String> createAccount(@Valid @RequestBody AccountRequest accountRequest){
-        log.info("new account created {}", accountRequest);
-        return accountService.createAccount(accountRequest);
-    }
-
-    @PostMapping("/enable")
-    public void enableAccount(@RequestBody Long account_id){
-        accountService.enableAccount(account_id);
-    }
-
-//for transaction service
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> accountUpdate(@RequestBody Account account, @PathVariable("id")Long id){
-        log.info("account updated {}", account);
-        return accountService.accountUpdate(account, id);
+    @PutMapping("/enable/{account_id}")
+    public void enableAccount(@PathVariable("account_id") Long id) throws ResourceNotFoundException {
+        accountService.enableAccount(id);
     }
 
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<String> updateAccountInfo(@RequestBody Map<String, Object> accountRequest, @PathVariable("id")Long id){
-        log.info("account updated {}", accountRequest);
-        return accountService.updateAccount(accountRequest, id);
+    @GetMapping("")
+    public ResponseEntity<AccountResponse> viewAccountByAcctHolder(){
+        return accountService.viewAccountByAcctHolder();
+    }
+
+    @PutMapping
+    public ResponseEntity<String> updateAccount(@RequestBody UpdateRequest updateRequest){
+        return accountService.updateAccount(updateRequest);
     }
 
 
-    @GetMapping("/view/{id}")
-    public ResponseEntity<AccountResponse> viewAccountByAcctHolder(@PathVariable("id")Long id){
-        return accountService.viewAccountByAcctHolder(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<String> accountBalanceUpdate(@RequestBody Account account, @PathVariable("id")Long id) throws CustomException {
+        return accountService.accountBalanceUpdate(account, id);
     }
 
 
     @GetMapping("/get")
-    public ResponseEntity<Account> getAccountWithAccountNum(@RequestParam(name = "accountNum")String accountNum){
+    public ResponseEntity<Account> getAccountWithAccountNumber(@RequestParam(name = "accountNum")String accountNum){
         return accountService.getAccountWithAccountNum(accountNum);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAccount(@PathVariable("id")Long id){
-        return accountService.deleteAccount(id);
+
+    @DeleteMapping("")
+    public ResponseEntity<String> deleteAccount(){
+        return accountService.deleteAccount();
     }
 
     //TODO: forgot password url

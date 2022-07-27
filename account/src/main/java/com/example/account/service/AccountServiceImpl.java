@@ -1,78 +1,108 @@
 package com.example.account.service;
 
+
+import com.example.account.dto.AccountPayload;
+import com.example.account.dto.UpdateRequest;
 import com.example.account.entity.Account;
+import com.example.account.entity.Role;
 import com.example.account.entity.Wallet;
-import com.example.account.model.AccountRequest;
-import com.example.account.model.AccountResponse;
+import com.example.account.dto.AccountRequest;
+import com.example.account.dto.AccountResponse;
+import com.example.account.exception.AccountAlreadyExistException;
+import com.example.account.exception.CustomException;
+import com.example.account.exception.ResourceNotFoundException;
 import com.example.account.repository.AccountRepository;
+import com.example.account.repository.RoleRepository;
 import com.example.account.repository.WalletRepository;
 import com.example.amqp.RabbitMQMessageProducer;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService{
 
     private final AccountRepository accountRepository;
     private final WalletRepository walletRepository;
-//    private RestTemplate restTemplate;
-    private RabbitMQMessageProducer rabbitMQMessageProducer;
+    private final PasswordEncoder passwordEncoder;
+//    private final RestTemplate restTemplate;
+    private final RoleRepository roleRepository;
+    private final RabbitMQMessageProducer rabbitMQMessageProducer;
 
     @Override
-    public ResponseEntity<String> createAccount(AccountRequest accountRequest) {
+    @Transactional
+    public ResponseEntity<String> createAccount(AccountRequest accountRequest) throws ResourceNotFoundException, AccountAlreadyExistException {
 
-        if(accountRepository.existsByEmail(accountRequest.getEmail())){
-            throw new RuntimeException("Account already exist");
+            if (accountRepository.existsByEmail(accountRequest.getEmail())) {
+                throw new AccountAlreadyExistException("Account already exist");
+            }
+
+            Role role = roleRepository.findRole("USER")
+                    .orElseThrow(() -> new ResourceNotFoundException("User role does not exist"));
+        Set<Role> roles = new HashSet<>();
+        roles.add(role);
+
+            Account account = Account.builder()
+                    .firstName(accountRequest.getFirstName())
+                    .lastName(accountRequest.getLastName())
+                    .email(accountRequest.getEmail())
+                    .password(passwordEncoder.encode(accountRequest.getPassword()))
+                    .roles(roles)
+                    .phoneNumber(accountRequest.getPhoneNumber())
+                    .address(accountRequest.getAddress())
+                    .wallet(buildWallet(accountRequest))
+                    .createdAt(LocalDateTime.now())
+                    .modifiedAt(LocalDateTime.now())
+                    .build();
+
+        Account savedAccount;
+        try {
+             savedAccount = accountRepository.save(account);
+
+        }catch(Exception e) {
+            throw new RuntimeException(e.getMessage());
         }
-        
-        Account account = Account.builder()
-                .firstName(accountRequest.getFirstName())
-                .lastName(accountRequest.getLastName())
-                .email(accountRequest.getEmail())
-                .password(accountRequest.getPassword())
-                .phoneNumber(accountRequest.getPhoneNumber())
-                .address(accountRequest.getAddress())
-                .wallet(buildWallet(accountRequest))
-                .createdAt(LocalDateTime.now())
-                .modifiedAt(LocalDateTime.now())
-                .build();
 
-        Account savedAccount = accountRepository.save(account);
-
-
-        Account account1 = Account.builder()
-                .email(savedAccount.getEmail())
+        AccountPayload payload = AccountPayload.builder()
                 .firstName(savedAccount.getFirstName())
-                .id(savedAccount.getId())
-                .build();
+                        .email(savedAccount.getEmail())
+                                .id(savedAccount.getId())
+                                        .build();
 
+//
 //        String url = "http://NOTIFICATION-SERVICE/api/v1/notification/verify";
-//        restTemplate.postForObject(url, account1, void.class);
+//        restTemplate.postForObject(url, payload, void.class);
 
-        rabbitMQMessageProducer.publish(account1, "internal.notification.routing-key",
-                "internal.exchange");
+            rabbitMQMessageProducer.publish(payload, "internal.notification.routing-key",
+                    "internal.exchange");
 
-        return new ResponseEntity<>("Account created", HttpStatus.CREATED);
+
+            return new ResponseEntity<>("Account created", HttpStatus.CREATED);
+
     }
+
+
 
     public Wallet buildWallet(AccountRequest accountRequest) {
 
         Wallet wallet = Wallet.builder()
-                .accountNumber(accountNumber())
+                .accountNumber(getUniqueAccountNumber())
                 .bvn(accountRequest.getBvn())
+                .balance(BigDecimal.ZERO)
                 .pin(accountRequest.getPin())
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
                 .build();
 
         log.info("Account number generated {}",wallet.getAccountNumber());
@@ -81,53 +111,51 @@ public class AccountServiceImpl implements AccountService{
 
 
     //account number generator
-    public String accountNumber() {
-        String uuid = UUID.randomUUID().toString().replace("-", "");
+    public String generateAccountNumber() {
+        Random rn = new Random();
+        StringBuilder number = new StringBuilder();
 
-        String numbers = "1234567890";
-        for (int i = 0; i < uuid.length(); i++) {
-            if (!numbers.contains(uuid.charAt(i) + "")) {
-                uuid = uuid.replace(uuid.charAt(i) + "", "");
-            }
-            log.info(uuid.substring(0, 10));
+        for (int i = 0; i < 10; i++) {
+            number.append(rn.nextInt(10));
         }
-        return uuid.substring(0, 10);
+        return number.toString();
+    }
+
+    public String getUniqueAccountNumber(){
+        String accountNumber = generateAccountNumber();
+
+        Wallet wallet = walletRepository.findByAccountNumber(accountNumber);
+        if (wallet == null){
+            return accountNumber;
+        }else{
+            accountNumber = generateAccountNumber();
+        }
+        log.info("Account number generated {}", accountNumber);
+        return accountNumber;
     }
 
 
 
     @Override
-    public void enableAccount(Long account_id) {
+    public void enableAccount(Long account_id) throws ResourceNotFoundException {
         Account account = accountRepository.findById(account_id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",account_id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("account with id %s not found",account_id)));
         account.setEnabled(true);
         accountRepository.save(account);
     }
 
 
+
     @Override
-    public ResponseEntity<String> updateAccount(Map<String, Object> accountRequest, Long id) {
-        Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
+    public ResponseEntity<AccountResponse> viewAccountByAcctHolder() {
 
-        accountRequest.forEach((k,v) -> {
-            Field field = ReflectionUtils.findField(Account.class, k);
-            assert field != null;
-            field.setAccessible(true);
-            ReflectionUtils.setField(field, account, v);
-        });
+        Account currentUser = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        accountRepository.save(account);
-
-        return new ResponseEntity<>("Account updated", HttpStatus.OK);
+        return new ResponseEntity<>(mapToAccountResponse(currentUser), HttpStatus.OK);
     }
 
-
-    @Override
-    public ResponseEntity<AccountResponse> viewAccountByAcctHolder(Long id) {
-        Account account = accountRepository.findById(id).
-                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
-        AccountResponse accountResponse = AccountResponse.builder()
+    private AccountResponse mapToAccountResponse(Account account){
+        return AccountResponse.builder()
                 .firstName(account.getFirstName())
                 .lastName(account.getLastName())
                 .email(account.getEmail())
@@ -136,18 +164,20 @@ public class AccountServiceImpl implements AccountService{
                 .accountNumber(account.getWallet().getAccountNumber())
                 .bvn(account.getWallet().getBvn())
                 .build();
-
-        return new ResponseEntity<>(accountResponse, HttpStatus.OK);
     }
 
 
 
     @Override
     public ResponseEntity<Account> getAccountWithAccountNum(String accountNum) {
+
+        log.info(accountNum);
+
         Optional<Wallet> wallet = Optional.ofNullable(walletRepository.findByAccountNumber(accountNum));
         Account account = null;
         if (wallet.isPresent()) {
-            account = accountRepository.findByWallet(wallet.get());
+
+            account = accountRepository.findByWalletId(wallet.get().getId());
         }
 
         return new ResponseEntity<>(account,HttpStatus.OK);
@@ -155,25 +185,61 @@ public class AccountServiceImpl implements AccountService{
 
 
     @Override
-    public ResponseEntity<String> accountUpdate(Account account, Long id) {
-        Account acct = accountRepository.findById(id).
-                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
-        BeanUtils.copyProperties(account, acct);
-        log.info(String.valueOf(account.getWallet().getBalance()));
+    public ResponseEntity<String> updateAccount(UpdateRequest updateRequest) {
+        Account currentUser = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        walletRepository.save(account.getWallet());
-        accountRepository.save(acct);
+        if(Objects.nonNull(updateRequest.getFirstName()) && !"".equalsIgnoreCase(updateRequest.getFirstName())){
+            currentUser.setFirstName(updateRequest.getFirstName());
+        }
+        if(Objects.nonNull(updateRequest.getLastName()) && !"".equalsIgnoreCase(updateRequest.getLastName())){
+            currentUser.setLastName(updateRequest.getLastName());
+        }
+        if(Objects.nonNull(updateRequest.getAddress()) && !"".equalsIgnoreCase(updateRequest.getAddress())){
+            currentUser.setAddress(updateRequest.getAddress());
+        }
+        if(Objects.nonNull(updateRequest.getPhoneNumber()) && !"".equalsIgnoreCase(updateRequest.getPhoneNumber())){
+            currentUser.setPhoneNumber(updateRequest.getPhoneNumber());
+        }
 
-        return new ResponseEntity<>("account updated by transaction",HttpStatus.OK);
+        accountRepository.save(currentUser);
+        return new ResponseEntity<>("Update Successful", HttpStatus.OK);
     }
 
 
     @Override
-    public ResponseEntity<String> deleteAccount(Long id) {
-        Account account = accountRepository.findById(id).
-                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
+    public ResponseEntity<String> accountBalanceUpdate(Account account, Long id) throws CustomException {
 
-        accountRepository.delete(account);
+        log.info(String.valueOf(account.getWallet().getBalance()));
+
+        int updatedCount = walletRepository.updateAccountBalance(account.getWallet().getId(), account.getWallet().getVersion(), account.getWallet().getBalance());
+        if (updatedCount < 1) throw new CustomException("Please try again !!!");
+
+        return new ResponseEntity<>("account updated by transaction",HttpStatus.OK);
+    }
+
+//    @Override
+//    @Transactional
+//    public ResponseEntity<String> accountUpdate(Account account, Long id) throws CustomException {
+//        log.info("in account update");
+//        log.info("in account update");
+//        log.info("in account update");
+//        Account acct = accountRepository.findById(id).
+//                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
+//        BeanUtils.copyProperties(account, acct);
+//        log.info(String.valueOf(account.getWallet().getBalance()));
+//
+//        int updatedCount = walletRepository.updateAccountBalance(account.getWallet().getId(), account.getWallet().getVersion(), account.getWallet().getBalance());
+//        if (updatedCount < 1) throw new CustomException("Please try again !!!");
+////        walletRepository.save(account.getWallet());
+//
+//        accountRepository.save(acct);
+//
+//        return new ResponseEntity<>("account updated by transaction",HttpStatus.OK);
+//    }
+    @Override
+    public ResponseEntity<String> deleteAccount() {
+        Account currentUser = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        accountRepository.delete(currentUser);
 
         return new ResponseEntity<>("Account deleted", HttpStatus.OK);
     }

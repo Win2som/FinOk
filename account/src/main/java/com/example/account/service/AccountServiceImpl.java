@@ -217,25 +217,6 @@ public class AccountServiceImpl implements AccountService{
         return new ResponseEntity<>("account updated by transaction",HttpStatus.OK);
     }
 
-//    @Override
-//    @Transactional
-//    public ResponseEntity<String> accountUpdate(Account account, Long id) throws CustomException {
-//        log.info("in account update");
-//        log.info("in account update");
-//        log.info("in account update");
-//        Account acct = accountRepository.findById(id).
-//                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("account with id %s not found",id)));
-//        BeanUtils.copyProperties(account, acct);
-//        log.info(String.valueOf(account.getWallet().getBalance()));
-//
-//        int updatedCount = walletRepository.updateAccountBalance(account.getWallet().getId(), account.getWallet().getVersion(), account.getWallet().getBalance());
-//        if (updatedCount < 1) throw new CustomException("Please try again !!!");
-////        walletRepository.save(account.getWallet());
-//
-//        accountRepository.save(acct);
-//
-//        return new ResponseEntity<>("account updated by transaction",HttpStatus.OK);
-//    }
     @Override
     public ResponseEntity<String> deleteAccount() {
         Account currentUser = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
